@@ -1,0 +1,2 @@
+# PracaInz
+Repozytorium pracy inżynierskiej
