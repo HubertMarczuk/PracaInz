@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def quicksort_prot(tab, left, right):
     if right - 1 <= left:
         return
@@ -22,5 +25,18 @@ def quicksort_prot(tab, left, right):
     return tab
 
 
-tab = quicksort_prot([9, 8, 7, 6, 5, 4, 3, 2], 0, 7)
-print(tab)
+def readcsv(path):
+    data = pd.read_csv(path, header=None)
+    return data
+
+
+# tab = quicksort_prot([9, 8, 7, 6, 5, 4, 3, 2], 0, 7)
+# print(tab)
+
+normalized = readcsv("Znormalizowane.csv")
+features = readcsv("Cechy.csv")
+names = readcsv("Nazwy aut.csv")
+
+print(normalized)
+print(features)
+print(names)
