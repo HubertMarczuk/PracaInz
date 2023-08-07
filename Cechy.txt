@@ -1,0 +1,20 @@
+Numer
+Nazwa
+Rok produkcji
+Segment
+Pojemność [l]
+Liczba cylindrów
+Moc [KM]
+Liczba miejsc
+Liczba drzwi
+przyspieszenie 0-100 km/h [s]
+prędkość maksymalna [km/h]
+Moment obrotowy [Nm]
+masa [kg]
+pojemność bagażnika [l]
+Pojemnośc baku
+długość [cm]
+szerokość [cm]
+wysokość [cm]
+Rozstaw osi [cm]
+Liczba biegów
