@@ -31,7 +31,6 @@ def normalize(data):
 def difference(user_pick, wages, data):
     Y = len(data)
     X = len(data[0])
-    print(Y, X)
     diff = []
     for j in range(Y):
         tmp = 0
@@ -42,28 +41,44 @@ def difference(user_pick, wages, data):
     return diff
 
 
-def quicksort_prot(tab, left, right):
+def quicksort(tab, key):
+    tab1 = tab[:]
+    key1 = key[:]
+    return quicksort_a(tab1, key1, 0, len(key) - 1)
+
+
+def quicksort_a(tab, key, left, right):
     if right - 1 <= left:
         return
-    pivot = tab[int((left + right) / 2)]
+    pivot = key[int((left + right) / 2)]
     i = left
     j = right
     while 1:
-        while pivot > tab[i]:
+        while pivot > key[i]:
             i = i + 1
-        while pivot < tab[j]:
+        while pivot < key[j]:
             j = j - 1
         if i < j:
-            temp = tab[i]
-            tab[i] = tab[j]
-            tab[j] = temp
+            print(tab[i])
+            print(tab[j])
+            print()
+            # temp = tab[i][:]
+            # tab[i][:] = tab[j][:]
+            # tab[j][:] = temp
+            tab[[i, j]] = tab[[j, i]]
+            temp = key[i]
+            key[i] = key[j]
+            key[j] = temp
+            print(tab[i])
+            print(tab[j])
+            print()
         else:
             break
     if j > left:
-        quicksort_prot(tab, left, j)
+        tab, key = quicksort_a(tab, key, left, j)
     if i < right:
-        quicksort_prot(tab, i, right)
-    return tab
+        tab, key = quicksort_a(tab, key, i, right)
+    return tab, key
 
 
 data = readcsv("Dane.csv")
@@ -91,14 +106,32 @@ user_values = [
     270,
     6,
 ]
-length = 40
+length = 5
 
 data = np.vstack([user_values, data])
+names.insert(0, "Wartości użytkownika")
 
 normalized = normalize(data)
 user_values_norm = normalized[0]
 
 diff = difference(user_values_norm, wages, normalized)
 
-# tab = quicksort_prot([9, 8, 7, 6, 5, 4, 3, 2], 0, 7)
-# print(tab)
+# sorted_normalized, sorted_diff = quicksort(normalized, diff)
+# sorted_names, sorted_diff1 = quicksort(names, diff)
+sorted_data, sorted_diff2 = quicksort(data, diff)
+# print(sorted_normalized[:length][:])
+# print()
+# print(normalized[:length][:])
+# print()
+# print(sorted_names[:length][:])
+# print(data[:length][:])
+# print()
+print(sorted_data[:length][:])
+print()
+print(data[:length][:])
+
+
+# print(normalized[:length][:])
+# normalized[[0, 1]] = normalized[[1, 0]]
+# print()
+# print(normalized[:length][:])
