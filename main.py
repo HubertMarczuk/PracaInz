@@ -87,19 +87,22 @@ def quicksort_a(tab, key, left, right):
 
 
 def merge_data(id, names, diff, data, features):
-    data.insert(0, features)
-    for i in range(1, len(id)):
+    for i in range(0, len(id)):
         data[i].insert(0, diff[i])
         data[i].insert(0, names[i])
         data[i].insert(0, id[i])
+    data.insert(0, features)
     return data
 
 
 def change_format(data):
+    print(data[0])
     for i in range(1, len(data)):
-        print(data[i])
         data[i][3] = int(data[i][3])
-        data[i][4] = chr(int(data[i][4]) + 65)
+        if data[i][4] == 7:
+            data[i][4] = "S"
+        else:
+            data[i][4] = chr(int(data[i][4]) + 64)
         data[i][6] = int(data[i][6])
         data[i][7] = int(data[i][7])
         data[i][8] = int(data[i][8])
@@ -114,6 +117,7 @@ def change_format(data):
         data[i][18] = int(data[i][18])
         data[i][19] = int(data[i][19])
         data[i][20] = int(data[i][20])
+        print(data[i])
     return data
 
 
@@ -122,7 +126,6 @@ features = readtxt("Cechy.txt")
 names = readtxt("Nazwy aut.txt")
 
 features.insert(2, "Różnica (0-1)")
-# names.insert(2, "Różnica (0-1)")
 
 wages = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 user_values = [
@@ -145,12 +148,10 @@ user_values = [
     270,
     6,
 ]
-length = 5
+length = 247
 
 data = np.vstack([user_values, data])
 names.insert(0, "Wartości użytkownika")
-
-print(names)
 
 data = arraytolist(data)
 
@@ -164,27 +165,7 @@ id = list(range(len(diff)))
 sorted_names, sorted_diff1 = quicksort(names, diff)
 sorted_data, sorted_diff2 = quicksort(data, diff)
 sorted_id, sorted_diff3 = quicksort(id, diff)
-# print(sorted_names[:length][:])
-# print()
-# print(names[:length][:])
-# print()
-# print(sorted_diff1[:length][:])
-# print()
-# print(sorted_diff2[:length][:])
-# print()
-# print(sorted_diff3[:length][:])
-# print()
-# print(diff[:length][:])
-# print()
-# print(sorted_data[:length][:])
-# print()
-# print(data[:length][:])
-# print(sorted_id[:length][:])
-# print()
-# print(id[:length][:])
 
 data = merge_data(sorted_id, sorted_names, sorted_diff1, sorted_data, features)
-# print(data)
 
-data = change_format(data)
-print(data)
+data = change_format(data[:length][:])

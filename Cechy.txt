@@ -7,14 +7,14 @@ Liczba cylindrów
 Moc [KM]
 Liczba miejsc
 Liczba drzwi
-przyspieszenie 0-100 km/h [s]
-prędkość maksymalna [km/h]
+Przyspieszenie 0-100 km/h [s]
+Prędkość maksymalna [km/h]
 Moment obrotowy [Nm]
-masa [kg]
-pojemność bagażnika [l]
-Pojemnośc baku
-długość [cm]
-szerokość [cm]
-wysokość [cm]
+Masa [kg]
+Pojemność bagażnika [l]
+Pojemnośc baku [l]
+Długość [cm]
+Szerokość [cm]
+Wysokość [cm]
 Rozstaw osi [cm]
 Liczba biegów
