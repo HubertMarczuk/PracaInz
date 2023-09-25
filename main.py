@@ -52,6 +52,7 @@ def difference(user_pick, wages, data):
         diff.append(tmp)
     return diff
 
+
 def Pearson(user_pick, wages, data):
     Y = len(data)
     X = len(data[0])
@@ -59,8 +60,9 @@ def Pearson(user_pick, wages, data):
     for j in range(Y):
         tmp = 0
         for i in range(X):
-            
-    return factors
+            i
+    # return factors
+
 
 def quicksort(tab, key):
     tab1 = tab[:]
