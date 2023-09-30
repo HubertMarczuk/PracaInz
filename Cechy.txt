@@ -1,4 +1,4 @@
-Numer
+ID
 Nazwa
 Rok produkcji
 Segment
@@ -12,7 +12,7 @@ Prędkość maksymalna [km/h]
 Moment obrotowy [Nm]
 Masa [kg]
 Pojemność bagażnika [l]
-Pojemnośc baku [l]
+Pojemność baku [l]
 Długość [cm]
 Szerokość [cm]
 Wysokość [cm]

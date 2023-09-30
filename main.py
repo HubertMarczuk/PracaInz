@@ -1,5 +1,6 @@
 import numpy as np
 import io
+import pandas as pd
 
 
 def readcsv(path):
@@ -107,7 +108,9 @@ def merge_data(id, names, diff, data, features):
 
 
 def change_format(data):
+    data[0].insert(0, "Pozycja")
     print(data[0])
+    licznik = 0
     for i in range(1, len(data)):
         data[i][3] = int(data[i][3])
         if data[i][4] == 7:
@@ -128,8 +131,17 @@ def change_format(data):
         data[i][18] = int(data[i][18])
         data[i][19] = int(data[i][19])
         data[i][20] = int(data[i][20])
+        data[i].insert(0, licznik)
+        licznik += 1
         print(data[i])
     return data
+
+
+def writetoexcel(data, path):
+    df = pd.DataFrame(data)
+    df.to_excel(excel_writer=path, sheet_name="ranking", index=False, header=False)
+
+    print("Result saved")
 
 
 data = readcsv("Dane.csv")
@@ -159,7 +171,7 @@ user_values = [
     270,
     6,
 ]
-length = 247
+length = 251
 
 data = np.vstack([user_values, data])
 names.insert(0, "Wartości użytkownika")
@@ -180,3 +192,5 @@ sorted_id, sorted_diff3 = quicksort(id, diff)
 data = merge_data(sorted_id, sorted_names, sorted_diff1, sorted_data, features)
 
 data = change_format(data[:length][:])
+
+writetoexcel(data, "wyniki.xlsx")
