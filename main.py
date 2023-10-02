@@ -40,7 +40,7 @@ def normalize(data):
     return new
 
 
-def difference(user_pick, wages, data):
+def distance(user_pick, wages, data):
     Y = len(data)
     X = len(data[0])
     diff = []
@@ -48,9 +48,9 @@ def difference(user_pick, wages, data):
         tmp = 0
         for i in range(X):
             if wages[i] != 0:
-                tmp += np.abs(data[j][i] - user_pick[i]) / wages[i]
-        tmp /= np.sum(wages)
-        tmp = round(tmp, 6)
+                tmp += pow(np.abs(data[j][i] - user_pick[i]) / wages[i], 2)
+        tmp = pow(tmp, 0.5)
+        tmp = round(tmp, 3)
         diff.append(tmp)
     return diff
 
@@ -73,17 +73,21 @@ def quicksort(tab, key):
 
 
 def quicksort_a(tab, key, left, right):
-    if right - 1 <= left:
+    if right <= left:
         return tab, key
     pivot = key[int((left + right) / 2)]
-    i = left
-    j = right
+    i = left - 1
+    j = right + 1
     while 1:
-        while pivot > key[i]:
-            i = i + 1
-        while pivot < key[j]:
-            j = j - 1
-        if i < j:
+        while 1:
+            i += 1
+            if pivot <= key[i]:
+                break
+        while 1:
+            j -= 1
+            if pivot >= key[j]:
+                break
+        if i <= j:
             temp = tab[i]
             tab[i] = tab[j]
             tab[j] = temp
@@ -158,7 +162,7 @@ wages = [  # [0-3]
     1,  # number of cylinders
     1,  # power
     1,  # number of seats
-    1,  # number of doors
+    3,  # number of doors
     1,  # acceleration 0-100
     1,  # maximum speed
     1,  # torque
@@ -201,7 +205,7 @@ data = arraytolist(data)
 normalized = normalize(data)
 user_values_norm = normalized[0]
 
-diff = difference(user_values_norm, wages, normalized)
+diff = distance(user_values_norm, wages, normalized)
 
 id = list(range(len(diff)))
 
