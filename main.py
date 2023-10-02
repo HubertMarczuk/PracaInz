@@ -47,7 +47,8 @@ def difference(user_pick, wages, data):
     for j in range(Y):
         tmp = 0
         for i in range(X):
-            tmp += wages[i] * np.abs(data[j][i] - user_pick[i])
+            if wages[i] != 0:
+                tmp += np.abs(data[j][i] - user_pick[i]) / wages[i]
         tmp /= np.sum(wages)
         tmp = round(tmp, 6)
         diff.append(tmp)
@@ -150,28 +151,47 @@ names = readtxt("Nazwy aut.txt")
 
 features.insert(2, "Różnica (0-1)")
 
-wages = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-user_values = [
-    2010,
-    4,
-    3,
-    6,
-    350,
-    4,
-    2,
-    6.0,
-    260,
-    450,
-    1600,
-    400,
-    60,
-    450,
-    180,
-    130,
-    270,
-    6,
+wages = [  # [0-3]
+    1,  # year of production
+    1,  # segment
+    1,  # engine capacity
+    1,  # number of cylinders
+    1,  # power
+    1,  # number of seats
+    1,  # number of doors
+    1,  # acceleration 0-100
+    1,  # maximum speed
+    1,  # torque
+    1,  # curb weight
+    1,  # trunk capacity
+    1,  # tank capacity
+    1,  # length
+    1,  # width
+    1,  # height
+    1,  # wheelbase
+    1,  # number of gears
 ]
-length = 251
+user_values = [
+    2010,  # year of production  [1955-2023]
+    4,  # segment             [0-6]
+    3,  # engine capacity     [0.0-8.4]
+    6,  # number of cylinders [2-16]
+    350,  # power               [76-1600]
+    4,  # number of seats     [2-6]
+    2,  # number of doors     [2-5]
+    6.0,  # acceleration 0-100  [2.4-15.0]
+    260,  # maximum speed       [154-492]
+    450,  # torque              [107-1600]
+    1600,  # curb weight         [655-2695]
+    400,  # trunk capacity      [0-813]
+    60,  # tank capacity       [0-159]
+    450,  # length              [305-542]
+    180,  # width               [140-223]
+    130,  # height              [98-154]
+    270,  # wheelbase           [204-305]
+    6,  # number of gears     [2-9]
+]
+length = 251  # [3-251] number of records in the result
 
 data = np.vstack([user_values, data])
 names.insert(0, "Wartości użytkownika")
