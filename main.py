@@ -195,7 +195,7 @@ user_values = [
     270,  # wheelbase           [204-305]
     6,  # number of gears     [2-9]
 ]
-length = 251  # [3-251] number of records in the result
+length = 255  # [3-255] number of records in the result
 
 data = np.vstack([user_values, data])
 names.insert(0, "Wartości użytkownika")
