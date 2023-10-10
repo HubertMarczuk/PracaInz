@@ -3,13 +3,13 @@ import io
 import pandas as pd
 
 
-def readcsv(path):
+def Readcsv(path):
     CSV = open(path)
     data = np.loadtxt(CSV, delimiter=";")
     return data
 
 
-def readtxt(path):
+def Readtxt(path):
     stream = io.open(path, "rt", encoding="utf8")
     text = stream.readlines()
     for i in range(len(text)):
@@ -17,7 +17,7 @@ def readtxt(path):
     return text
 
 
-def arraytolist(data):
+def Clonetolist(data):
     Y = len(data)
     X = len(data[0])
     new = [[0 for i in range(X)] for j in range(Y)]
@@ -27,7 +27,7 @@ def arraytolist(data):
     return new
 
 
-def normalize(data):
+def Normalize(data):
     Y = len(data)
     X = len(data[0])
     new = [[0 for i in range(X)] for j in range(Y)]
@@ -40,10 +40,10 @@ def normalize(data):
     return new
 
 
-def distance(user_pick, wages, data):
+def Distance(user_pick, wages, data):
     Y = len(data)
     X = len(data[0])
-    diff = []
+    dist = []
     for j in range(Y):
         tmp = 0
         for i in range(X):
@@ -51,28 +51,87 @@ def distance(user_pick, wages, data):
                 tmp += pow(np.abs(data[j][i] - user_pick[i]) / wages[i], 2)
         tmp = pow(tmp, 0.5)
         tmp = round(tmp, 3)
-        diff.append(tmp)
-    return diff
+        dist.append(tmp)
+    return dist
 
 
 def Pearson(user_pick, wages, data):
     Y = len(data)
     X = len(data[0])
+    data = Multiply_wages_2dim(data, wages)
+    user_pick = Multiply_wages(user_pick, wages)
     factors = []
+    avg_user = Average(user_pick)
+    sum_den_user = 0
+    for i in range(X):
+        sum_den_user += pow(user_pick[i] - avg_user, 2)
+    sum_den_user = pow(sum_den_user, 0.5)
     for j in range(Y):
-        tmp = 0
+        sum_num = 0
+        sum_den_x = 0
+        avg_x = Average(data[j])
         for i in range(X):
-            i
-    # return factors
+            sum_num += (data[j][i] - avg_x) * (user_pick[i] - avg_user)
+            sum_den_x += pow(data[j][i] - avg_x, 2)
+        sum_den_x = pow(sum_den_x, 0.5)
+        tmp = sum_num / (sum_den_x * sum_den_user)
+        tmp = round(tmp, 6)
+        factors.append(tmp)
+    return factors
 
 
-def quicksort(tab, key):
-    tab1 = tab[:]
-    key1 = key[:]
-    return quicksort_a(tab1, key1, 0, len(key) - 1)
+def Kendall(user_pick, wages, data):
+    Y = len(data)
+    X = len(data[0])
+    data = Multiply_wages_2dim(data, wages)
+    user_pick = Multiply_wages(user_pick, wages)
+    tau = []
+    tau.append(1)
+    for j in range(1, Y):
+        P = 0
+        Q = 0
+        T = 0
+        for i in range(X):
+            for k in range(X):
+                if i > k:
+                    det = (data[j][i] - data[j][k]) * (user_pick[i] - user_pick[k])
+                    if det == 0:
+                        T += 1
+                    if det > 0:
+                        P += 1
+                    else:
+                        Q += 1
+        tmp = (P - Q) / (P + Q + T)
+        tmp = round(tmp, 6)
+        tau.append(tmp)
+    return tau
 
 
-def quicksort_a(tab, key, left, right):
+def Multiply_wages_2dim(data, wages):
+    for j in range(len(data)):
+        for i in range(len(data[0])):
+            data[j][i] *= wages[i] / 3
+    return data
+
+
+def Multiply_wages(tab, wages):
+    for i in range(len(tab)):
+        tab[i] *= wages[i] / 3
+    return tab
+
+
+def Average(tab):
+    sum = 0
+    for i in range(len(tab)):
+        sum += tab[i]
+    return sum / len(tab)
+
+
+def Quicksort(tab, key):
+    return Quicksort_a(tab[:], key[:], 0, len(key) - 1)
+
+
+def Quicksort_a(tab, key, left, right):
     if right <= left:
         return tab, key
     pivot = key[int((left + right) / 2)]
@@ -97,36 +156,36 @@ def quicksort_a(tab, key, left, right):
         else:
             break
     if j > left:
-        tab, key = quicksort_a(tab, key, left, j)
+        tab, key = Quicksort_a(tab, key, left, j)
     if i < right:
-        tab, key = quicksort_a(tab, key, i, right)
+        tab, key = Quicksort_a(tab, key, i, right)
     return tab, key
 
 
-def merge_data(id, names, diff, data, features):
+def Merge_data(id, names, criterion, data, features_arg):
+    data = Clonetolist(data)
+    features = features_arg.copy()
     for i in range(0, len(id)):
-        data[i].insert(0, diff[i])
+        data[i].insert(0, criterion[i])
         data[i].insert(0, names[i])
         data[i].insert(0, id[i])
+        data[i].insert(0, i)
+    features.insert(0, "Pozycja")
     data.insert(0, features)
     return data
 
 
-def change_format(data):
-    data[0].insert(0, "Pozycja")
-    print(data[0])
-    licznik = 0
+def Change_format(data):
     for i in range(1, len(data)):
-        data[i][3] = int(data[i][3])
-        if data[i][4] == 7:
-            data[i][4] = "S"
+        data[i][4] = int(data[i][4])
+        if data[i][5] == 7:
+            data[i][5] = "S"
         else:
-            data[i][4] = chr(int(data[i][4]) + 64)
-        data[i][6] = int(data[i][6])
+            data[i][5] = chr(int(data[i][5]) + 64)
         data[i][7] = int(data[i][7])
         data[i][8] = int(data[i][8])
         data[i][9] = int(data[i][9])
-        data[i][11] = int(data[i][11])
+        data[i][11] = int(data[i][10])
         data[i][12] = int(data[i][12])
         data[i][13] = int(data[i][13])
         data[i][14] = int(data[i][14])
@@ -136,24 +195,25 @@ def change_format(data):
         data[i][18] = int(data[i][18])
         data[i][19] = int(data[i][19])
         data[i][20] = int(data[i][20])
-        data[i].insert(0, licznik)
-        licznik += 1
-        print(data[i])
     return data
 
 
-def writetoexcel(data, path):
+def Display(data):
+    for row in data:
+        print(row)
+
+
+def Writetoexcel(data, path):
     df = pd.DataFrame(data)
     df.to_excel(excel_writer=path, sheet_name="ranking", index=False, header=False)
-
     print("Result saved")
 
 
-data = readcsv("Dane.csv")
-features = readtxt("Cechy.txt")
-names = readtxt("Nazwy aut.txt")
+data = Readcsv("Dane.csv")
+features = Readtxt("Cechy.txt")
+names = Readtxt("Nazwy aut.txt")
 
-features.insert(2, "Różnica (0-1)")
+features.insert(2, "Kryterium główne")
 
 wages = [  # [0-3]
     1,  # year of production
@@ -200,21 +260,55 @@ length = 255  # [3-255] number of records in the result
 data = np.vstack([user_values, data])
 names.insert(0, "Wartości użytkownika")
 
-data = arraytolist(data)
+data = Clonetolist(data)
 
-normalized = normalize(data)
+normalized = Normalize(data)
 user_values_norm = normalized[0]
 
-diff = distance(user_values_norm, wages, normalized)
+dist = Distance(user_values_norm, wages, normalized)
+pearson = Pearson(user_values_norm, wages, normalized)
+kendall = Kendall(user_values_norm, wages, normalized)
 
-id = list(range(len(diff)))
+id = list(range(len(data)))
 
-sorted_names, sorted_diff1 = quicksort(names, diff)
-sorted_data, sorted_diff2 = quicksort(data, diff)
-sorted_id, sorted_diff3 = quicksort(id, diff)
+sorted_names_d, sorted_dist = Quicksort(names, dist)
+sorted_data_d, sorted_dist = Quicksort(data, dist)
+sorted_id_d, sorted_dist = Quicksort(id, dist)
 
-data = merge_data(sorted_id, sorted_names, sorted_diff1, sorted_data, features)
+sorted_names_p, sorted_pear = Quicksort(names, pearson)
+sorted_data_p, sorted_pear = Quicksort(data, pearson)
+sorted_id_p, sorted_pear = Quicksort(id, pearson)
 
-data = change_format(data[:length][:])
+sorted_names_p.reverse()
+sorted_data_p.reverse()
+sorted_id_p.reverse()
+sorted_pear.reverse()
 
-writetoexcel(data, "wyniki.xlsx")
+sorted_names_k, sorted_kend = Quicksort(names, kendall)
+sorted_data_k, sorted_kend = Quicksort(data, kendall)
+sorted_id_k, sorted_kend = Quicksort(id, kendall)
+
+sorted_names_k.reverse()
+sorted_data_k.reverse()
+sorted_id_k.reverse()
+sorted_kend.reverse()
+
+data_d = Merge_data(sorted_id_d, sorted_names_d, sorted_dist, sorted_data_d, features)
+data_p = Merge_data(sorted_id_p, sorted_names_p, sorted_pear, sorted_data_p, features)
+data_k = Merge_data(sorted_id_k, sorted_names_k, sorted_kend, sorted_data_k, features)
+
+data_d = Change_format(data_d[:length][:])
+data_p = Change_format(data_p[:length][:])
+data_k = Change_format(data_k[:length][:])
+
+data_d[0][3] = "Odleglosc"
+data_p[0][3] = "Podobienstwo"
+data_k[0][3] = "Estymator tau"
+
+Display(data_d)
+Display(data_p)
+Display(data_k)
+
+Writetoexcel(data_d, "wyniki_odleglosc.xlsx")
+Writetoexcel(data_p, "wyniki_pearson.xlsx")
+Writetoexcel(data_k, "wyniki_kendall.xlsx")
