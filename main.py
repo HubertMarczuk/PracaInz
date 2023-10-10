@@ -201,6 +201,7 @@ def Change_format(data):
 def Display(data):
     for row in data:
         print(row)
+    print()
 
 
 def Writetoexcel(data, path):
