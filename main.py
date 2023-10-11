@@ -185,7 +185,7 @@ def Change_format(data):
         data[i][7] = int(data[i][7])
         data[i][8] = int(data[i][8])
         data[i][9] = int(data[i][9])
-        data[i][11] = int(data[i][10])
+        data[i][10] = int(data[i][10])
         data[i][12] = int(data[i][12])
         data[i][13] = int(data[i][13])
         data[i][14] = int(data[i][14])
