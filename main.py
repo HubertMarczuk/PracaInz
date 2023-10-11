@@ -302,8 +302,8 @@ data_d = Change_format(data_d[:length][:])
 data_p = Change_format(data_p[:length][:])
 data_k = Change_format(data_k[:length][:])
 
-data_d[0][3] = "Odleglosc"
-data_p[0][3] = "Podobienstwo"
+data_d[0][3] = "Odleglość"
+data_p[0][3] = "Podobieństwo"
 data_k[0][3] = "Estymator tau"
 
 Display(data_d)
