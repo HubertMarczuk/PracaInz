@@ -1,6 +1,214 @@
 import numpy as np
 import io
 import pandas as pd
+from tkinter import *
+from tkinter import messagebox
+
+
+class CarRecommendation(object):
+    def __init__(self):
+        self.window = Tk()
+        self.window.geometry("800x800")
+        self.window.title("Rekomendacja samochodów")
+        self.BuildWindow()
+        self.window.mainloop()
+
+    def BuildWindow(self):
+        field_width = 20
+
+        self.label_criteria_names = Label(self.window)
+        self.label_criteria_names["text"] = "Nazwy kryteriów do podania"
+        self.label_criteria_names.grid(row=0, column=0, sticky=W)
+
+        self.label_criteria_value = Label(self.window)
+        self.label_criteria_value["text"] = "Wartości kryteriów"
+        self.label_criteria_value.grid(row=0, column=1, sticky=W)
+
+        self.label_criteria_weights = Label(self.window)
+        self.label_criteria_weights["text"] = "Wagi kryteriów (0-3)"
+        self.label_criteria_weights.grid(row=0, column=2, sticky=W)
+
+        self.label_year = Label(self.window)
+        self.label_year["text"] = "Rok produkcji (1955-2023)"
+        self.label_year.grid(row=1, column=0, sticky=W)
+
+        self.year_value = Entry(self.window, width=field_width)
+        self.year_value.grid(row=1, column=1, sticky=W)
+
+        self.year_weight = Entry(self.window, width=field_width)
+        self.year_weight.grid(row=1, column=2, sticky=W)
+
+        self.label_segment = Label(self.window)
+        self.label_segment["text"] = "Segment (A,B,...,F,S)"
+        self.label_segment.grid(row=2, column=0, sticky=W)
+
+        self.segment_value = Entry(self.window, width=field_width)
+        self.segment_value.grid(row=2, column=1, sticky=W)
+
+        self.segment_weight = Entry(self.window, width=field_width)
+        self.segment_weight.grid(row=2, column=2, sticky=W)
+
+        self.label_engine_capacity = Label(self.window)
+        self.label_engine_capacity["text"] = "Pojemność silnika [l] (0.0-8.4)"
+        self.label_engine_capacity.grid(row=3, column=0, sticky=W)
+
+        self.engine_capacity_value = Entry(self.window, width=field_width)
+        self.engine_capacity_value.grid(row=3, column=1, sticky=W)
+
+        self.engine_capacity_weight = Entry(self.window, width=field_width)
+        self.engine_capacity_weight.grid(row=3, column=2, sticky=W)
+
+        self.label_number_of_cylinders = Label(self.window)
+        self.label_number_of_cylinders["text"] = "Liczba cylindrów (2-16)"
+        self.label_number_of_cylinders.grid(row=4, column=0, sticky=W)
+
+        self.number_of_cylinders_value = Entry(self.window, width=field_width)
+        self.number_of_cylinders_value.grid(row=4, column=1, sticky=W)
+
+        self.number_of_cylinders_weight = Entry(self.window, width=field_width)
+        self.number_of_cylinders_weight.grid(row=4, column=2, sticky=W)
+
+        self.label_power = Label(self.window)
+        self.label_power["text"] = "Moc [KM] (76-1600)"
+        self.label_power.grid(row=5, column=0, sticky=W)
+
+        self.power_value = Entry(self.window, width=field_width)
+        self.power_value.grid(row=5, column=1, sticky=W)
+
+        self.power_weight = Entry(self.window, width=field_width)
+        self.power_weight.grid(row=5, column=2, sticky=W)
+
+        self.label_number_of_seats = Label(self.window)
+        self.label_number_of_seats["text"] = "Liczba miejsc (2-6)"
+        self.label_number_of_seats.grid(row=6, column=0, sticky=W)
+
+        self.number_of_seats_value = Entry(self.window, width=field_width)
+        self.number_of_seats_value.grid(row=6, column=1, sticky=W)
+
+        self.number_of_seats_weight = Entry(self.window, width=field_width)
+        self.number_of_seats_weight.grid(row=6, column=2, sticky=W)
+
+        self.label_number_of_doors = Label(self.window)
+        self.label_number_of_doors["text"] = "Liczba drzwi (2-5)"
+        self.label_number_of_doors(row=7, column=0, sticky=W)
+
+        self.number_of_doors_value = Entry(self.window, width=field_width)
+        self.number_of_doors_value.grid(row=7, column=1, sticky=W)
+
+        self.number_of_doors_weight = Entry(self.window, width=field_width)
+        self.number_of_doors_weight.grid(row=7, column=2, sticky=W)
+
+        self.label_0_100_acceleration = Label(self.window)
+        self.label_0_100_acceleration[
+            "text"
+        ] = "Przyspieszenie 0-100km/h [s] (2.4-15.0)"
+        self.label_0_100_acceleration.grid(row=8, column=0, sticky=W)
+
+        self._0_100_acceleration_value = Entry(self.window, width=field_width)
+        self._0_100_acceleration_value.grid(row=8, column=1, sticky=W)
+
+        self._0_100_acceleration_weight = Entry(self.window, width=field_width)
+        self._0_100_acceleration_weight.grid(row=8, column=2, sticky=W)
+
+        self.label_maximum_speed = Label(self.window)
+        self.label_maximum_speed["text"] = "Prędkość maksymalna [km/h] (154-492)"
+        self.label_maximum_speed.grid(row=9, column=0, sticky=W)
+
+        self.maximum_speed_value = Entry(self.window, width=field_width)
+        self.maximum_speed_value.grid(row=9, column=1, sticky=W)
+
+        self.maximum_speed_weight = Entry(self.window, width=field_width)
+        self.maximum_speed_weight.grid(row=9, column=2, sticky=W)
+
+        self.label_torque = Label(self.window)
+        self.label_torque["text"] = "Moment obrotowy [Nm] (107-1600)"
+        self.label_torque.grid(row=10, column=0, sticky=W)
+
+        self.torque_value = Entry(self.window, width=field_width)
+        self.torque_value.grid(row=10, column=1, sticky=W)
+
+        self.torque_weight = Entry(self.window, width=field_width)
+        self.torque_weight.grid(row=10, column=2, sticky=W)
+
+        self.label_curb_weight = Label(self.window)
+        self.label_curb_weight["text"] = "Masa własna [kg] (655-2695)"
+        self.label_curb_weight.grid(row=11, column=0, sticky=W)
+
+        self.curb_weight_value = Entry(self.window, width=field_width)
+        self.curb_weight_value.grid(row=11, column=1, sticky=W)
+
+        self.curb_weight_weight = Entry(self.window, width=field_width)
+        self.curb_weight_weight.grid(row=11, column=2, sticky=W)
+
+        self.label_trunk_capacity = Label(self.window)
+        self.label_trunk_capacity["text"] = "Pojemnośc bagażnika [l] (0-813)"
+        self.label_trunk_capacity.grid(row=12, column=0, sticky=W)
+
+        self.trunk_capacity_value = Entry(self.window, width=field_width)
+        self.trunk_capacity_value.grid(row=12, column=1, sticky=W)
+
+        self.trunk_capacity_weight = Entry(self.window, width=field_width)
+        self.trunk_capacity_weight.grid(row=12, column=2, sticky=W)
+
+        self.label_tank_capacity = Label(self.window)
+        self.label_tank_capacity["text"] = "Pojemność baku [l] (0-159)"
+        self.label_tank_capacity.grid(row=13, column=0, sticky=W)
+
+        self.tank_capacity_value = Entry(self.window, width=field_width)
+        self.tank_capacity_value.grid(row=13, column=1, sticky=W)
+
+        self.tank_capacity_weight = Entry(self.window, width=field_width)
+        self.tank_capacity_weight.grid(row=13, column=2, sticky=W)
+
+        self.label_length = Label(self.window)
+        self.label_length["text"] = "Długość [cm] (305-542)"
+        self.label_length.grid(row=14, column=0, sticky=W)
+
+        self.length_value = Entry(self.window, width=field_width)
+        self.length_value.grid(row=14, column=1, sticky=W)
+
+        self.length_weight = Entry(self.window, width=field_width)
+        self.length_weight.grid(row=14, column=2, sticky=W)
+
+        self.label_width = Label(self.window)
+        self.label_width["text"] = "Szerokość [cm] (140-223)"
+        self.label_width.grid(row=15, column=0, sticky=W)
+
+        self.width_value = Entry(self.window, width=field_width)
+        self.width_value.grid(row=15, column=1, sticky=W)
+
+        self.width_weight = Entry(self.window, width=field_width)
+        self.width_weight.grid(row=15, column=2, sticky=W)
+
+        self.label_height = Label(self.window)
+        self.label_height["text"] = "Wysokość [cm] (98-154)"
+        self.label_height.grid(row=16, column=0, sticky=W)
+
+        self.height_value = Entry(self.window, width=field_width)
+        self.height_value.grid(row=16, column=1, sticky=W)
+
+        self.height_weight = Entry(self.window, width=field_width)
+        self.height_weight.grid(row=16, column=2, sticky=W)
+
+        self.label_wheelbase = Label(self.window)
+        self.label_wheelbase["text"] = "Rozstaw osi [cm] (204-305)"
+        self.label_wheelbase.grid(row=17, column=0, sticky=W)
+
+        self.wheelbase_value = Entry(self.window, width=field_width)
+        self.wheelbase_value.grid(row=17, column=1, sticky=W)
+
+        self.wheelbase_weight = Entry(self.window, width=field_width)
+        self.wheelbase_weight.grid(row=17, column=2, sticky=W)
+
+        self.label_number_of_gears = Label(self.window)
+        self.label_number_of_gears["text"] = "Liczba biegów (2-9)"
+        self.label_number_of_gears.grid(row=18, column=0, sticky=W)
+
+        self.number_of_gears_value = Entry(self.window, width=field_width)
+        self.number_of_gears_value.grid(row=18, column=1, sticky=W)
+
+        self.number_of_gears_weight = Entry(self.window, width=field_width)
+        self.number_of_gears_weight.grid(row=18, column=2, sticky=W)
 
 
 def Readcsv(path):
@@ -40,26 +248,26 @@ def Normalize(data):
     return new
 
 
-def Distance(user_pick, wages, data):
+def Distance(user_pick, weights, data):
     Y = len(data)
     X = len(data[0])
     dist = []
     for j in range(Y):
         tmp = 0
         for i in range(X):
-            if wages[i] != 0:
-                tmp += pow(np.abs(data[j][i] - user_pick[i]) / wages[i], 2)
+            if weights[i] != 0:
+                tmp += pow(np.abs(data[j][i] - user_pick[i]) / weights[i], 2)
         tmp = pow(tmp, 0.5)
         tmp = round(tmp, 3)
         dist.append(tmp)
     return dist
 
 
-def Pearson(user_pick, wages, data):
+def Pearson(user_pick, weights, data):
     Y = len(data)
     X = len(data[0])
-    data = Multiply_wages_2dim(data, wages)
-    user_pick = Multiply_wages(user_pick, wages)
+    data = Multiply_weights_2dim(data, weights)
+    user_pick = Multiply_weights(user_pick, weights)
     factors = []
     avg_user = Average(user_pick)
     sum_den_user = 0
@@ -80,11 +288,11 @@ def Pearson(user_pick, wages, data):
     return factors
 
 
-def Kendall(user_pick, wages, data):
+def Kendall(user_pick, weights, data):
     Y = len(data)
     X = len(data[0])
-    data = Multiply_wages_2dim(data, wages)
-    user_pick = Multiply_wages(user_pick, wages)
+    data = Multiply_weights_2dim(data, weights)
+    user_pick = Multiply_weights(user_pick, weights)
     tau = []
     tau.append(1)
     for j in range(1, Y):
@@ -107,16 +315,16 @@ def Kendall(user_pick, wages, data):
     return tau
 
 
-def Multiply_wages_2dim(data, wages):
+def Multiply_weights_2dim(data, weights):
     for j in range(len(data)):
         for i in range(len(data[0])):
-            data[j][i] *= wages[i] / 3
+            data[j][i] *= weights[i] / 3
     return data
 
 
-def Multiply_wages(tab, wages):
+def Multiply_weights(tab, weights):
     for i in range(len(tab)):
-        tab[i] *= wages[i] / 3
+        tab[i] *= weights[i] / 3
     return tab
 
 
@@ -216,7 +424,7 @@ names = Readtxt("Nazwy aut.txt")
 
 features.insert(2, "Kryterium główne")
 
-wages = [  # [0-3]
+weights = [  # [0-3]
     1,  # year of production
     1,  # segment
     1,  # engine capacity
@@ -266,9 +474,9 @@ data = Clonetolist(data)
 normalized = Normalize(data)
 user_values_norm = normalized[0]
 
-dist = Distance(user_values_norm, wages, normalized)
-pearson = Pearson(user_values_norm, wages, normalized)
-kendall = Kendall(user_values_norm, wages, normalized)
+dist = Distance(user_values_norm, weights, normalized)
+pearson = Pearson(user_values_norm, weights, normalized)
+kendall = Kendall(user_values_norm, weights, normalized)
 
 id = list(range(len(data)))
 
