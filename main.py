@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
-import numpy as np
-import io
-import pandas as pd
+from numpy import abs, loadtxt, vstack, max, min
+from pandas import DataFrame
+from io import open
 
 
 class EmptyFieldError(Exception):
@@ -54,11 +54,11 @@ class CarRecommendation(object):
 
     def Readcsv(self, path):
         CSV = open(path)
-        data = np.loadtxt(CSV, delimiter=";")
+        data = loadtxt(CSV, delimiter=";")
         return data
 
     def Readtxt(self, path):
-        stream = io.open(path, "rt", encoding="utf8")
+        stream = open(path, "rt", encoding="utf8")
         text = stream.readlines()
         for i in range(len(text)):
             text[i] = text[i].replace("\n", "")
@@ -279,7 +279,7 @@ class CarRecommendation(object):
     def Recommend(self):
         self.CopyUserData()
 
-        self.data = np.vstack([self.user_values, self.data])
+        self.data = vstack([self.user_values, self.data])
         self.names.insert(0, "Wartości użytkownika")
 
         self.data = self.Clonetolist(self.data)
@@ -377,8 +377,8 @@ class CarRecommendation(object):
         X = len(data[0])
         new = [[0 for i in range(X)] for j in range(Y)]
         for i in range(X):
-            MIN = np.min(data[:][i])
-            MAX = np.max(data[:][i])
+            MIN = min(data[:][i])
+            MAX = max(data[:][i])
             for j in range(Y):
                 tmp = (data[j][i] - MIN) / (MAX - MIN)
                 new[j][i] = tmp
@@ -392,7 +392,7 @@ class CarRecommendation(object):
             tmp = 0
             for i in range(X):
                 if weights[i] != 0:
-                    tmp += pow(np.abs(data[j][i] - user_pick[i]) / weights[i], 2)
+                    tmp += pow(abs(data[j][i] - user_pick[i]) / weights[i], 2)
             tmp = pow(tmp, 0.5)
             tmp = round(tmp, 3)
             dist.append(tmp)
@@ -542,7 +542,7 @@ class CarRecommendation(object):
         return data
 
     def Writetoexcel(self, data, path):
-        df = pd.DataFrame(data)
+        df = DataFrame(data)
         df.to_excel(excel_writer=path, sheet_name="ranking", index=False, header=False)
 
 
