@@ -38,7 +38,7 @@ class OutOfRangeError(Exception):
 class CarRecommendation(object):
     def __init__(self):
         self.window = Tk()
-        self.window.geometry("600x600")
+        self.window.geometry("495x450")
         self.window.title("Rekomendacja samochodów")
         self.ReadData()
         self.CountMinMax()
@@ -147,9 +147,9 @@ class CarRecommendation(object):
             self.weights[i] = Entry(self.window, width=field_width)
             self.weights[i].grid(row=i + 1, column=3, sticky=W)
 
-        self.gap1 = Label(self.window)
-        self.gap1["text"] = ""
-        self.gap1.grid(row=19, column=0, sticky=W)
+        self.gap = Label(self.window)
+        self.gap["text"] = ""
+        self.gap.grid(row=19, column=0, sticky=W)
 
         self.length_label = Label(self.window)
         self.length_label["text"] = (
@@ -160,18 +160,10 @@ class CarRecommendation(object):
         self.length = Entry(self.window, width=field_width)
         self.length.grid(row=20, column=1, sticky=W)
 
-        self.gap2 = Label(self.window)
-        self.gap2["text"] = ""
-        self.gap2.grid(row=21, column=0, sticky=W)
-
-        self.accept_button = Button(self.window, width=field_width)
+        self.accept_button = Button(self.window, width=16)
         self.accept_button["text"] = "Rekomenduj"
         self.accept_button["command"] = self.CheckErrors
-        self.accept_button.grid(row=22, column=0, sticky=W)
-
-        self.done_text = Label(self.window)
-        self.done_text["text"] = ""
-        self.done_text.grid(row=22, column=1, sticky=W)
+        self.accept_button.grid(row=20, column=3, sticky=W)
 
     def CheckErrors(self):
         try:
