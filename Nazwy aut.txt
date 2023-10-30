@@ -251,3 +251,5 @@ BMW 335i
 Porsche 911 Carrera RS
 Seat Leon Cupra
 Mazda 3 MPS
+Mercedes 500SL
+Aston Martin DB7

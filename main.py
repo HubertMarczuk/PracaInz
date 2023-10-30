@@ -3,6 +3,7 @@ from tkinter import messagebox
 from numpy import abs, loadtxt, vstack, max, min
 from pandas import DataFrame
 from io import open
+from os.path import isfile
 
 
 class EmptyFieldError(Exception):
@@ -33,6 +34,11 @@ class OutOfRangeError(Exception):
         self.type = type
         self.min = min
         self.max = max
+
+
+class TooManyEmptyError(Exception):
+    def __init__(self):
+        self = self
 
 
 class CarRecommendation(object):
@@ -80,7 +86,6 @@ class CarRecommendation(object):
 
     def BuildWindow(self):
         field_width = 20
-        self.success_text = "Zrekomendowano!"
         self.labels = [None] * 18
         self.etiquettes = [None] * 18
         self.text = [
@@ -129,7 +134,7 @@ class CarRecommendation(object):
         self.label_criteria_value.grid(row=0, column=1, sticky=W)
 
         self.label_criteria_weights = Label(self.window)
-        self.label_criteria_weights["text"] = "Wagi kryteriów (0-3)"
+        self.label_criteria_weights["text"] = "Wagi kryteriów (1-3)"
         self.label_criteria_weights.grid(row=0, column=3, sticky=W)
 
         for i in range(18):
@@ -167,49 +172,58 @@ class CarRecommendation(object):
 
     def CheckErrors(self):
         try:
+            counter = 0
             for i in range(18):
-                if self.values[i].get() == "":
+                if self.values[i].get() == "" and self.weights[i].get() != "":
                     raise EmptyFieldError(self.text[i], "Wartość")
-                if self.weights[i].get() == "":
+                if self.weights[i].get() == "" and self.values[i].get() != "":
                     raise EmptyFieldError(self.text[i], "Waga")
-                if i == 1:
-                    if (
-                        self.values[i].get() != "A"
-                        and self.values[i].get() != "B"
-                        and self.values[i].get() != "C"
-                        and self.values[i].get() != "D"
-                        and self.values[i].get() != "E"
-                        and self.values[i].get() != "F"
-                        and self.values[i].get() != "S"
-                    ):
-                        raise NotTheLetterError("e")
-                elif i == 2 or i == 7:
-                    if (
-                        self.values[i].get().find(".") == -1
-                        or self.values[i].get()[len(self.values[i].get()) - 2] != "."
-                    ):
-                        raise NonFractionalError(self.text[i])
-                    if (
-                        float(self.values[i].get()) > self.max[i]
-                        or float(self.values[i].get()) < self.min[i]
-                    ):
-                        raise OutOfRangeError(
-                            self.text[i], "Wartość", self.min[i], self.max[i]
-                        )
-                else:
-                    if self.values[i].get().find(".") != -1:
-                        raise NonIntegerError(self.text[i], "Wartość")
-                    if (
-                        int(self.values[i].get()) > self.max[i]
-                        or int(self.values[i].get()) < self.min[i]
-                    ):
-                        raise OutOfRangeError(
-                            self.text[i], "Wartość", int(self.min[i]), int(self.max[i])
-                        )
-                if self.weights[i].get().find(".") != -1:
-                    raise NonIntegerError(self.text[i], "Waga")
-                if int(self.weights[i].get()) > 3 or int(self.weights[i].get()) < 0:
-                    raise OutOfRangeError(self.text[i], "Waga", 0, 3)
+                if self.values[i].get() != "" and self.weights[i].get() != "":
+                    counter += 1
+                    if i == 1:
+                        if (
+                            self.values[i].get() != "A"
+                            and self.values[i].get() != "B"
+                            and self.values[i].get() != "C"
+                            and self.values[i].get() != "D"
+                            and self.values[i].get() != "E"
+                            and self.values[i].get() != "F"
+                            and self.values[i].get() != "S"
+                        ):
+                            raise NotTheLetterError("e")
+                    elif i == 2 or i == 7:
+                        if (
+                            self.values[i].get().find(".") == -1
+                            or self.values[i].get()[len(self.values[i].get()) - 2]
+                            != "."
+                        ):
+                            raise NonFractionalError(self.text[i])
+                        if (
+                            float(self.values[i].get()) > self.max[i]
+                            or float(self.values[i].get()) < self.min[i]
+                        ):
+                            raise OutOfRangeError(
+                                self.text[i], "Wartość", self.min[i], self.max[i]
+                            )
+                    else:
+                        if self.values[i].get().find(".") != -1:
+                            raise NonIntegerError(self.text[i], "Wartość")
+                        if (
+                            int(self.values[i].get()) > self.max[i]
+                            or int(self.values[i].get()) < self.min[i]
+                        ):
+                            raise OutOfRangeError(
+                                self.text[i],
+                                "Wartość",
+                                int(self.min[i]),
+                                int(self.max[i]),
+                            )
+                    if self.weights[i].get().find(".") != -1:
+                        raise NonIntegerError(self.text[i], "Waga")
+                    if int(self.weights[i].get()) > 3 or int(self.weights[i].get()) < 1:
+                        raise OutOfRangeError(self.text[i], "Waga", 1, 3)
+            if counter < 4:
+                raise TooManyEmptyError()
             if self.length.get() == "":
                 raise EmptyFieldError("Liczba rekomendowanych aut", "Wartość")
             if self.length.get().find(".") != -1:
@@ -218,6 +232,15 @@ class CarRecommendation(object):
                 raise OutOfRangeError(
                     "Liczba rekomendowanych aut", "Wartość", 0, len(self.data)
                 )
+            path = [
+                "wyniki_odleglosc.xlsx",
+                "wyniki_pearson.xlsx",
+                "wyniki_kendall.xlsx",
+            ]
+            for i in range(len(path)):
+                if isfile(path[i]):
+                    f = open(path[i], "r+")
+                    f.close()
             else:
                 self.Recommend()
 
@@ -267,30 +290,45 @@ class CarRecommendation(object):
                 + str(e.max)
                 + ")!",
             )
+        except TooManyEmptyError as e:
+            messagebox.showerror(
+                "Błąd",
+                "Co najmniej 4 kryteria powinny mieć wprowadzoną wartość oraz wagę!",
+            )
+        except IOError as e:
+            messagebox.showerror(
+                "Błąd!",
+                "Plik excel z wynikami nie może być otwarty podczas rekomendacji!\n"
+                + "Zamknij plik i rekomenduj ponownie.",
+            )
 
     def Recommend(self):
         self.CopyUserData()
 
-        self.data = vstack([self.user_values, self.data])
-        self.names.insert(0, "Wartości użytkownika")
+        data = self.data.copy()
+        names = self.names.copy()
+        features = self.features.copy()
 
-        self.data = self.Clonetolist(self.data)
+        data = vstack([self.user_values, data])
+        names.insert(0, "Wartości użytkownika")
 
-        normalized = self.Normalize(self.data)
+        data = self.Clonetolist(data)
+
+        normalized = self.Normalize(data)
         user_values_norm = normalized[0]
 
         dist = self.Distance(user_values_norm, self.user_weights, normalized)
         pearson = self.Pearson(user_values_norm, self.user_weights, normalized)
         kendall = self.Kendall(user_values_norm, self.user_weights, normalized)
 
-        id = list(range(len(self.data)))
+        id = list(range(len(data)))
 
-        sorted_names_d, sorted_dist = self.Quicksort(self.names, dist)
-        sorted_data_d, sorted_dist = self.Quicksort(self.data, dist)
+        sorted_names_d, sorted_dist = self.Quicksort(names, dist)
+        sorted_data_d, sorted_dist = self.Quicksort(data, dist)
         sorted_id_d, sorted_dist = self.Quicksort(id, dist)
 
-        sorted_names_p, sorted_pear = self.Quicksort(self.names, pearson)
-        sorted_data_p, sorted_pear = self.Quicksort(self.data, pearson)
+        sorted_names_p, sorted_pear = self.Quicksort(names, pearson)
+        sorted_data_p, sorted_pear = self.Quicksort(data, pearson)
         sorted_id_p, sorted_pear = self.Quicksort(id, pearson)
 
         sorted_names_p.reverse()
@@ -298,8 +336,8 @@ class CarRecommendation(object):
         sorted_id_p.reverse()
         sorted_pear.reverse()
 
-        sorted_names_k, sorted_kend = self.Quicksort(self.names, kendall)
-        sorted_data_k, sorted_kend = self.Quicksort(self.data, kendall)
+        sorted_names_k, sorted_kend = self.Quicksort(names, kendall)
+        sorted_data_k, sorted_kend = self.Quicksort(data, kendall)
         sorted_id_k, sorted_kend = self.Quicksort(id, kendall)
 
         sorted_names_k.reverse()
@@ -308,13 +346,13 @@ class CarRecommendation(object):
         sorted_kend.reverse()
 
         data_d = self.Merge_data(
-            sorted_id_d, sorted_names_d, sorted_dist, sorted_data_d, self.features
+            sorted_id_d, sorted_names_d, sorted_dist, sorted_data_d, features
         )
         data_p = self.Merge_data(
-            sorted_id_p, sorted_names_p, sorted_pear, sorted_data_p, self.features
+            sorted_id_p, sorted_names_p, sorted_pear, sorted_data_p, features
         )
         data_k = self.Merge_data(
-            sorted_id_k, sorted_names_k, sorted_kend, sorted_data_k, self.features
+            sorted_id_k, sorted_names_k, sorted_kend, sorted_data_k, features
         )
 
         data_d = self.Change_format(data_d[: self.user_length][:], self.user_weights)
@@ -342,17 +380,22 @@ class CarRecommendation(object):
         self.user_weights = []
         self.user_values = []
         for i in range(len(self.values)):
-            if i == 1:
-                if self.values[i].get() == "S":
-                    self.user_values.append(7)
+            if self.values[i].get() != "":
+                if i == 1:
+                    if self.values[i].get() == "S":
+                        self.user_values.append(7)
+                    else:
+                        char_arr = list(self.values[i].get())
+                        self.user_values.append(int(ord(char_arr[0])) - 64)
+                elif i == 2 or i == 7:
+                    self.user_values.append(float(self.values[i].get()))
                 else:
-                    char_arr = list(self.values[i].get())
-                    self.user_values.append(int(ord(char_arr[0])) - 64)
-            elif i == 2 or i == 7:
-                self.user_values.append(float(self.values[i].get()))
+                    self.user_values.append(int(float(self.values[i].get())))
+                self.user_weights.append(int(float(self.weights[i].get())))
             else:
-                self.user_values.append(int(float(self.values[i].get())))
-            self.user_weights.append(int(float(self.weights[i].get())))
+                self.user_values.append(self.min[i])
+                self.user_weights.append(0)
+
         self.user_length = int(float(self.length.get())) + 2
 
     def Clonetolist(self, data):
@@ -386,7 +429,6 @@ class CarRecommendation(object):
                 if weights[i] != 0:
                     tmp += pow(abs(data[j][i] - user_pick[i]) / weights[i], 2)
             tmp = pow(tmp, 0.5)
-            tmp = round(tmp, 3)
             dist.append(tmp)
         return dist
 
@@ -396,21 +438,22 @@ class CarRecommendation(object):
         data = self.Multiply_weights_2dim(data, weights)
         user_pick = self.Multiply_weights(user_pick, weights)
         factors = []
-        avg_user = self.Average(user_pick)
+        avg_user = self.Average(user_pick, weights)
         sum_den_user = 0
         for i in range(X):
-            sum_den_user += pow(user_pick[i] - avg_user, 2)
+            if weights[i] != 0:
+                sum_den_user += pow(user_pick[i] - avg_user, 2)
         sum_den_user = pow(sum_den_user, 0.5)
         for j in range(Y):
             sum_num = 0
             sum_den_x = 0
-            avg_x = self.Average(data[j])
+            avg_x = self.Average(data[j], weights)
             for i in range(X):
-                sum_num += (data[j][i] - avg_x) * (user_pick[i] - avg_user)
-                sum_den_x += pow(data[j][i] - avg_x, 2)
+                if weights[i] != 0:
+                    sum_num += (data[j][i] - avg_x) * (user_pick[i] - avg_user)
+                    sum_den_x += pow(data[j][i] - avg_x, 2)
             sum_den_x = pow(sum_den_x, 0.5)
             tmp = sum_num / (sum_den_x * sum_den_user)
-            tmp = round(tmp, 6)
             factors.append(tmp)
         return factors
 
@@ -420,23 +463,21 @@ class CarRecommendation(object):
         data = self.Multiply_weights_2dim(data, weights)
         user_pick = self.Multiply_weights(user_pick, weights)
         tau = []
-        tau.append(1)
-        for j in range(1, Y):
+        for j in range(Y):
             P = 0
             Q = 0
             T = 0
             for i in range(X):
                 for k in range(X):
-                    if i > k:
-                        det = (data[j][i] - data[j][k]) * (user_pick[i] - user_pick[k])
-                        if det == 0:
+                    if i > k and weights[i] != 0 and weights[k] != 0:
+                        prob = (data[j][i] - data[j][k]) * (user_pick[i] - user_pick[k])
+                        if prob == 0:
                             T += 1
-                        if det > 0:
+                        elif prob > 0:
                             P += 1
                         else:
                             Q += 1
             tmp = (P - Q) / (P + Q + T)
-            tmp = round(tmp, 6)
             tau.append(tmp)
         return tau
 
@@ -451,11 +492,14 @@ class CarRecommendation(object):
             tab[i] *= weights[i] / 3
         return tab
 
-    def Average(self, tab):
+    def Average(self, tab, weights):
         sum = 0
+        counter = 0
         for i in range(len(tab)):
-            sum += tab[i]
-        return sum / len(tab)
+            if weights[i] != 0:
+                sum += tab[i]
+                counter += 1
+        return sum / counter
 
     def Quicksort(self, tab, key):
         return self.Quicksort_a(tab[:], key[:], 0, len(key) - 1)
@@ -491,16 +535,16 @@ class CarRecommendation(object):
         return tab, key
 
     def Merge_data(self, id, names, criterion, data, features_arg):
-        data = self.Clonetolist(data)
+        new_data = self.Clonetolist(data)
         features = features_arg.copy()
         for i in range(0, len(id)):
-            data[i].insert(0, criterion[i])
-            data[i].insert(0, names[i])
-            data[i].insert(0, id[i])
-            data[i].insert(0, i)
+            new_data[i].insert(0, criterion[i])
+            new_data[i].insert(0, names[i])
+            new_data[i].insert(0, id[i])
+            new_data[i].insert(0, i)
         features.insert(0, "Pozycja")
-        data.insert(0, features)
-        return data
+        new_data.insert(0, features)
+        return new_data
 
     def Change_format(self, data, weights):
         for i in range(1, len(data)):
@@ -531,6 +575,16 @@ class CarRecommendation(object):
             else:
                 weights_out.append(weights[i - 4])
         data.insert(0, weights_out)
+        for i in range(2, len(data)):
+            if data[i][2] == "Wartości użytkownika" and i != 2:
+                for j in range(1, len(data[0])):
+                    tmp = data[i][j]
+                    data[i][j] = data[2][j]
+                    data[2][j] = tmp
+                break
+        for i in range(4, len(data[0])):
+            if weights[i - 4] == 0:
+                data[2][i] = "-"
         return data
 
     def Writetoexcel(self, data, path):
