@@ -253,3 +253,5 @@ Seat Leon Cupra
 Mazda 3 MPS
 Mercedes 500SL
 Aston Martin DB7
+Porsche Panamera S
+BMW 330i
