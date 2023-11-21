@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter import messagebox
 from numpy import abs, loadtxt, vstack, max, min
 from pandas import DataFrame
-from io import open
 from os.path import isfile
 
 
@@ -258,11 +257,11 @@ class CarRecommendation(object):
                 "Błąd", e.type + " kryterium " + e.name + " nie może być pusta!"
             )
 
-        except ValueError as e:
-            messagebox.showerror(
-                "Błąd",
-                "Wszystkie wartości poza wartością kryterium Segment oraz wszystkie wagi muszą być liczbami!",
-            )
+        # except ValueError as e:
+        #   messagebox.showerror(
+        #      "Błąd",
+        #     "Wszystkie wartości poza wartością kryterium Segment oraz wszystkie wagi muszą być liczbami!",
+        # )
 
         except NonFractionalError as e:
             messagebox.showerror(
@@ -425,8 +424,8 @@ class CarRecommendation(object):
         X = len(data[0])
         new = [[0 for i in range(X)] for j in range(Y)]
         for i in range(X):
-            MIN = min(data[:][i])
-            MAX = max(data[:][i])
+            MIN = min([j[i] for j in data])
+            MAX = max([j[i] for j in data])
             for j in range(Y):
                 tmp = (data[j][i] - MIN) / (MAX - MIN)
                 new[j][i] = tmp
@@ -443,7 +442,7 @@ class CarRecommendation(object):
                 if weights[i] != 0:
                     tmp += pow(abs(data[j][i] - user_pick[i]) / weights[i], 2)
             tmp = pow(tmp, 0.5)
-            dist.append(tmp)
+            dist.append(round(tmp, 10))
         return dist
 
     # Function calculating the Pearson correlation coefficient between user requirements and cars from the data
@@ -469,7 +468,7 @@ class CarRecommendation(object):
                     sum_den_x += pow(data[j][i] - avg_x, 2)
             sum_den_x = pow(sum_den_x, 0.5)
             tmp = sum_num / (sum_den_x * sum_den_user)
-            factors.append(tmp)
+            factors.append(round(tmp, 10))
         return factors
 
     # Function calculating the Kendall rank correlation coefficient between user requirements and cars from the data
@@ -494,7 +493,10 @@ class CarRecommendation(object):
                         else:
                             Q += 1
             tmp = (P - Q) / (P + Q + T)
-            tau.append(tmp)
+            if j == 0:
+                tau.append(round(tmp))
+            else:
+                tau.append(round(tmp, 10))
         return tau
 
     # Function multipling the values of variables in a 2-dimensional list with the weigths of individual features
@@ -598,13 +600,31 @@ class CarRecommendation(object):
             else:
                 weights_out.append(weights[i - 4])
         data.insert(0, weights_out)
-        for i in range(2, len(data)):
-            if data[i][2] == "Wartości użytkownika" and i != 2:
-                for j in range(1, len(data[0])):
-                    tmp = data[i][j]
-                    data[i][j] = data[2][j]
-                    data[2][j] = tmp
-                break
+        if data[2][2] != "Wartości użytkownika":
+            isinlist = 0
+            for i in range(2, len(data)):
+                if data[i][2] == "Wartości użytkownika" and i != 2:
+                    isinlist = 1
+                    for j in range(1, len(data[0])):
+                        tmp = data[i][j]
+                        data[i][j] = data[2][j]
+                        data[2][j] = tmp
+                    break
+            if isinlist == 0:
+                del data[len(data) - 1]
+                correction = [0, 0, "Wartości użytkownika", data[2][3]]
+                for i in range(len(self.values)):
+                    if self.values[i].get() == "":
+                        correction.append("-")
+                    elif i == 1:
+                        correction.append(self.values[i].get())
+                    elif i == 2 or i == 7:
+                        correction.append(float(self.values[i].get()))
+                    else:
+                        correction.append(float(int(self.values[i].get())))
+                data.insert(2, correction)
+                for i in range(len(data) - 2):
+                    data[i + 2][0] = i
         for i in range(4, len(data[0])):
             if weights[i - 4] == 0:
                 data[2][i] = "-"
