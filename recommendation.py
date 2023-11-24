@@ -256,13 +256,11 @@ class CarRecommendation(object):
             messagebox.showerror(
                 "Błąd", e.type + " kryterium " + e.name + " nie może być pusta!"
             )
-
         # except ValueError as e:
-        #   messagebox.showerror(
-        #      "Błąd",
-        #     "Wszystkie wartości poza wartością kryterium Segment oraz wszystkie wagi muszą być liczbami!",
-        # )
-
+        #    messagebox.showerror(
+        #        "Błąd",
+        #        "Wszystkie wartości poza wartością kryterium Segment oraz wszystkie wagi muszą być liczbami!",
+        #    )
         except NonFractionalError as e:
             messagebox.showerror(
                 "Błąd",
@@ -364,9 +362,15 @@ class CarRecommendation(object):
             sorted_id_k, sorted_names_k, sorted_kend, sorted_data_k, features
         )
 
-        data_d = self.ChangeFormat(data_d[: self.user_length][:], self.user_weights)
-        data_p = self.ChangeFormat(data_p[: self.user_length][:], self.user_weights)
-        data_k = self.ChangeFormat(data_k[: self.user_length][:], self.user_weights)
+        data_d = self.ChangeFormat(
+            data_d[: self.user_length][:], self.user_weights, dist[0]
+        )
+        data_p = self.ChangeFormat(
+            data_p[: self.user_length][:], self.user_weights, pearson[0]
+        )
+        data_k = self.ChangeFormat(
+            data_k[: self.user_length][:], self.user_weights, kendall[0]
+        )
 
         data_d[1][3] = "Odleglość"
         data_p[1][3] = "Podobieństwo"
@@ -440,7 +444,7 @@ class CarRecommendation(object):
             tmp = 0
             for i in range(X):
                 if weights[i] != 0:
-                    tmp += pow(abs(data[j][i] - user_pick[i]) / weights[i], 2)
+                    tmp += pow(abs(data[j][i] - user_pick[i]), 2) / weights[i]
             tmp = pow(tmp, 0.5)
             dist.append(round(tmp, 10))
         return dist
@@ -449,8 +453,8 @@ class CarRecommendation(object):
     def Pearson(self, user_pick, weights, data):
         Y = len(data)
         X = len(data[0])
-        data = self.MultiplyWeights2dim(data, weights)
-        user_pick = self.MultiplyWeights(user_pick, weights)
+        # data = self.MultiplyWeights2dim(data, weights)
+        # user_pick = self.MultiplyWeights(user_pick, weights)
         factors = []
         avg_user = self.Average(user_pick, weights)
         sum_den_user = 0
@@ -475,8 +479,6 @@ class CarRecommendation(object):
     def Kendall(self, user_pick, weights, data):
         Y = len(data)
         X = len(data[0])
-        data = self.MultiplyWeights2dim(data, weights)
-        user_pick = self.MultiplyWeights(user_pick, weights)
         tau = []
         for j in range(Y):
             P = 0
@@ -487,17 +489,29 @@ class CarRecommendation(object):
                     if i > k and weights[i] != 0 and weights[k] != 0:
                         prob = (data[j][i] - data[j][k]) * (user_pick[i] - user_pick[k])
                         if prob == 0:
-                            T += 1
+                            T += weights[i] + weights[k]
                         elif prob > 0:
-                            P += 1
+                            P += weights[i] + weights[k]
                         else:
-                            Q += 1
+                            Q += weights[i] + weights[k]
             tmp = (P - Q) / (P + Q + T)
-            if j == 0:
-                tau.append(round(tmp))
-            else:
-                tau.append(round(tmp, 10))
+            tau.append(round(tmp, 10))
         return tau
+
+    # Experimental function
+    def MultiplyWeights1(self, userpick, data, weights):
+        new_data = data.copy()
+        new_userpick = userpick.copy()
+        new_weights = weights.copy()
+        for j in range(len(data)):
+            for i in range(len(data[0])):
+                if weights[i] > 1:
+                    for k in range(weights[i] - 1):
+                        new_data[i].append(data[j][i])
+                        if j == 0:
+                            new_userpick.append(userpick[i])
+                            new_weights.append(weights[i])
+        return new_data, new_userpick, new_weights
 
     # Function multipling the values of variables in a 2-dimensional list with the weigths of individual features
     def MultiplyWeights2dim(self, data, weights):
@@ -571,7 +585,7 @@ class CarRecommendation(object):
         return new_data
 
     # Function changing the format of data to display result to the user
-    def ChangeFormat(self, data, weights):
+    def ChangeFormat(self, data, weights, criterion):
         for i in range(1, len(data)):
             data[i][4] = int(data[i][4])
             if data[i][5] == 7:
@@ -601,33 +615,29 @@ class CarRecommendation(object):
                 weights_out.append(weights[i - 4])
         data.insert(0, weights_out)
         if data[2][2] != "Wartości użytkownika":
-            isinlist = 0
+            correction = [0, 0, "Wartości użytkownika", criterion]
+            for i in range(len(self.values)):
+                if self.values[i].get() == "":
+                    correction.append("-")
+                elif i == 1:
+                    correction.append(self.values[i].get())
+                elif i == 2 or i == 7:
+                    correction.append(float(self.values[i].get()))
+                else:
+                    correction.append((int(float(self.values[i].get()))))
+            data.insert(2, correction)
+            counter = 0
             for i in range(2, len(data)):
                 if data[i][2] == "Wartości użytkownika" and i != 2:
-                    isinlist = 1
-                    for j in range(1, len(data[0])):
-                        tmp = data[i][j]
-                        data[i][j] = data[2][j]
-                        data[2][j] = tmp
+                    data.pop(i)
+                    counter = 1
                     break
-            if isinlist == 0:
-                del data[len(data) - 1]
-                correction = [0, 0, "Wartości użytkownika", data[2][3]]
-                for i in range(len(self.values)):
-                    if self.values[i].get() == "":
-                        correction.append("-")
-                    elif i == 1:
-                        correction.append(self.values[i].get())
-                    elif i == 2 or i == 7:
-                        correction.append(float(self.values[i].get()))
-                    else:
-                        correction.append(float(int(self.values[i].get())))
-                data.insert(2, correction)
-                for i in range(len(data) - 2):
-                    data[i + 2][0] = i
-        for i in range(4, len(data[0])):
-            if weights[i - 4] == 0:
-                data[2][i] = "-"
+            if counter == 0:
+                data.pop(len(data) - 1)
+        else:
+            for i in range(4, len(data[0])):
+                if weights[i - 4] == 0:
+                    data[2][i] = "-"
         return data
 
     # Function converting a 2-dimensional li of results into a pandas data frame and saves it to ans XLSX file
