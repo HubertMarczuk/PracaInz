@@ -214,7 +214,7 @@ class CarRecommendation(object):
                                 self.text[i], "Wartość", self.min[i], self.max[i]
                             )
                     else:
-                        if self.values[i].get().find(".") != -1:
+                        if self.values[i].get().isnumeric() == False:
                             raise NonIntegerError(self.text[i], "Wartość")
                         if (
                             int(self.values[i].get()) > self.max[i]
@@ -226,7 +226,7 @@ class CarRecommendation(object):
                                 int(self.min[i]),
                                 int(self.max[i]),
                             )
-                    if self.weights[i].get().find(".") != -1:
+                    if self.weights[i].get().isnumeric() == False:
                         raise NonIntegerError(self.text[i], "Waga")
                     if int(self.weights[i].get()) > 3 or int(self.weights[i].get()) < 1:
                         raise OutOfRangeError(self.text[i], "Waga", 1, 3)
@@ -242,6 +242,7 @@ class CarRecommendation(object):
                 )
             path = [
                 "wyniki_odleglosc.xlsx",
+                "wyniki_odleglosc_minkowskiego.xlsx",
                 "wyniki_pearson.xlsx",
                 "wyniki_kendall.xlsx",
             ]
@@ -256,11 +257,7 @@ class CarRecommendation(object):
             messagebox.showerror(
                 "Błąd", e.type + " kryterium " + e.name + " nie może być pusta!"
             )
-        # except ValueError as e:
-        #    messagebox.showerror(
-        #        "Błąd",
-        #        "Wszystkie wartości poza wartością kryterium Segment oraz wszystkie wagi muszą być liczbami!",
-        #    )
+
         except NonFractionalError as e:
             messagebox.showerror(
                 "Błąd",
@@ -275,7 +272,7 @@ class CarRecommendation(object):
                 e.type
                 + " kryterium "
                 + e.name
-                + " musi być całkowitą, pisaną bez kropki!",
+                + " musi być liczbą całkowitą, pisaną bez kropki!",
             )
 
         except NotTheLetterError as e:
@@ -324,7 +321,8 @@ class CarRecommendation(object):
         normalized = self.Normalize(data)
         user_values_norm = normalized[0]
 
-        dist = self.Distance(user_values_norm, self.user_weights, normalized)
+        dist = self.Distance(user_values_norm, self.user_weights, normalized, 2)
+        dist2 = self.Distance(user_values_norm, self.user_weights, normalized, 4)
         pearson = self.Pearson(user_values_norm, self.user_weights, normalized)
         kendall = self.Kendall(user_values_norm, self.user_weights, normalized)
 
@@ -333,6 +331,10 @@ class CarRecommendation(object):
         sorted_names_d, sorted_dist = self.Quicksort(names, dist)
         sorted_data_d, sorted_dist = self.Quicksort(data, dist)
         sorted_id_d, sorted_dist = self.Quicksort(id, dist)
+
+        sorted_names_d2, sorted_dist2 = self.Quicksort(names, dist2)
+        sorted_data_d2, sorted_dist2 = self.Quicksort(data, dist2)
+        sorted_id_d2, sorted_dist2 = self.Quicksort(id, dist2)
 
         sorted_names_p, sorted_pear = self.Quicksort(names, pearson)
         sorted_data_p, sorted_pear = self.Quicksort(data, pearson)
@@ -355,6 +357,9 @@ class CarRecommendation(object):
         data_d = self.MergeData(
             sorted_id_d, sorted_names_d, sorted_dist, sorted_data_d, features
         )
+        data_d2 = self.MergeData(
+            sorted_id_d2, sorted_names_d2, sorted_dist2, sorted_data_d2, features
+        )
         data_p = self.MergeData(
             sorted_id_p, sorted_names_p, sorted_pear, sorted_data_p, features
         )
@@ -365,6 +370,9 @@ class CarRecommendation(object):
         data_d = self.ChangeFormat(
             data_d[: self.user_length][:], self.user_weights, dist[0]
         )
+        data_d2 = self.ChangeFormat(
+            data_d2[: self.user_length][:], self.user_weights, dist2[0]
+        )
         data_p = self.ChangeFormat(
             data_p[: self.user_length][:], self.user_weights, pearson[0]
         )
@@ -373,10 +381,12 @@ class CarRecommendation(object):
         )
 
         data_d[1][3] = "Odleglość"
+        data_d2[1][3] = "Odległość Minkowskiego"
         data_p[1][3] = "Podobieństwo"
         data_k[1][3] = "Estymator tau"
 
         self.WriteToXLSX(data_d, "wyniki_odleglosc.xlsx")
+        self.WriteToXLSX(data_d2, "wyniki_odleglosc_minkowskiego.xlsx")
         self.WriteToXLSX(data_p, "wyniki_pearson.xlsx")
         self.WriteToXLSX(data_k, "wyniki_kendall.xlsx")
 
@@ -385,6 +395,7 @@ class CarRecommendation(object):
             "Rekomendacja zakończona sukcesem!\n\n"
             + "Wyniki zostały zapisane w katalogu tej aplikacji w plikach:\n"
             + '"wyniki_odleglosc.xlsx" obliczone za pomocą odległości w przestrzeni euklidesowej;\n'
+            + '"wyniki_odleglosc_minkowskiego.xlsx" obliczone za pomocą odległości minkowskiego;\n'
             + '"wyniki_pearson.xlsx" obliczone za pomocą współczynnika korelacji Pearsona;\n'
             + '"wyniki_kendall.xlsx" obliczone za pomocą tau Kendalla.\n',
         )
@@ -436,7 +447,7 @@ class CarRecommendation(object):
         return new
 
     # Function calculating the distance in Euclidean space between the user requirements and the cars in the data
-    def Distance(self, user_pick, weights, data):
+    def Distance(self, user_pick, weights, data, p):
         Y = len(data)
         X = len(data[0])
         dist = []
@@ -444,8 +455,8 @@ class CarRecommendation(object):
             tmp = 0
             for i in range(X):
                 if weights[i] != 0:
-                    tmp += pow(abs(data[j][i] - user_pick[i]), 2) / weights[i]
-            tmp = pow(tmp, 0.5)
+                    tmp += pow(abs(data[j][i] - user_pick[i]), p) / weights[i]
+            tmp = pow(tmp, 1 / p)
             dist.append(round(tmp, 10))
         return dist
 
@@ -453,23 +464,19 @@ class CarRecommendation(object):
     def Pearson(self, user_pick, weights, data):
         Y = len(data)
         X = len(data[0])
-        # data = self.MultiplyWeights2dim(data, weights)
-        # user_pick = self.MultiplyWeights(user_pick, weights)
         factors = []
-        avg_user = self.Average(user_pick, weights)
+        avg_user = self.Average_weight(user_pick, weights)
         sum_den_user = 0
         for i in range(X):
-            if weights[i] != 0:
-                sum_den_user += pow(user_pick[i] - avg_user, 2)
+            sum_den_user += weights[i] * pow(user_pick[i] - avg_user, 2)
         sum_den_user = pow(sum_den_user, 0.5)
         for j in range(Y):
             sum_num = 0
             sum_den_x = 0
-            avg_x = self.Average(data[j], weights)
+            avg_x = self.Average_weight(data[j], weights)
             for i in range(X):
-                if weights[i] != 0:
-                    sum_num += (data[j][i] - avg_x) * (user_pick[i] - avg_user)
-                    sum_den_x += pow(data[j][i] - avg_x, 2)
+                sum_num += weights[i] * (data[j][i] - avg_x) * (user_pick[i] - avg_user)
+                sum_den_x += weights[i] * pow(data[j][i] - avg_x, 2)
             sum_den_x = pow(sum_den_x, 0.5)
             tmp = sum_num / (sum_den_x * sum_den_user)
             factors.append(round(tmp, 10))
@@ -498,43 +505,14 @@ class CarRecommendation(object):
             tau.append(round(tmp, 10))
         return tau
 
-    # Experimental function
-    def MultiplyWeights1(self, userpick, data, weights):
-        new_data = data.copy()
-        new_userpick = userpick.copy()
-        new_weights = weights.copy()
-        for j in range(len(data)):
-            for i in range(len(data[0])):
-                if weights[i] > 1:
-                    for k in range(weights[i] - 1):
-                        new_data[i].append(data[j][i])
-                        if j == 0:
-                            new_userpick.append(userpick[i])
-                            new_weights.append(weights[i])
-        return new_data, new_userpick, new_weights
-
-    # Function multipling the values of variables in a 2-dimensional list with the weigths of individual features
-    def MultiplyWeights2dim(self, data, weights):
-        for j in range(len(data)):
-            for i in range(len(data[0])):
-                data[j][i] *= weights[i] / 3
-        return data
-
-    # Function multipling the values of variables in a list with the weigths of individual features
-    def MultiplyWeights(self, tab, weights):
-        for i in range(len(tab)):
-            tab[i] *= weights[i] / 3
-        return tab
-
     # Function calculating the average of the list for elements with non-zero weight
-    def Average(self, tab, weights):
+    def Average_weight(self, tab, weights):
         sum = 0
-        counter = 0
+        weight_sum = 0
         for i in range(len(tab)):
-            if weights[i] != 0:
-                sum += tab[i]
-                counter += 1
-        return sum / counter
+            weight_sum += weights[i]
+            sum += tab[i] * weights[i]
+        return sum / weight_sum
 
     # Function initiating quick sorting of the list by key
     def Quicksort(self, tab, key):
