@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
-from numpy import abs, loadtxt, vstack, max, min
+from numpy import abs, loadtxt, vstack, max, min, sign
 from pandas import DataFrame
 from os.path import isfile
 
@@ -487,21 +487,23 @@ class CarRecommendation(object):
         Y = len(data)
         X = len(data[0])
         tau = []
+        sum_den = 0
+        for i in range(X):
+            for k in range(X):
+                if i > k:
+                    sum_den += weights[i] * weights[k]
         for j in range(Y):
-            P = 0
-            Q = 0
-            T = 0
+            sum_num = 0
             for i in range(X):
                 for k in range(X):
-                    if i > k and weights[i] != 0 and weights[k] != 0:
-                        prob = (data[j][i] - data[j][k]) * (user_pick[i] - user_pick[k])
-                        if prob == 0:
-                            T += weights[i] + weights[k]
-                        elif prob > 0:
-                            P += weights[i] + weights[k]
-                        else:
-                            Q += weights[i] + weights[k]
-            tmp = (P - Q) / (P + Q + T)
+                    if i > k:
+                        sum_num += (
+                            weights[i]
+                            * weights[k]
+                            * sign(user_pick[i] - user_pick[k])
+                            * sign(data[j][i] - data[j][k])
+                        )
+            tmp = sum_num / sum_den
             tau.append(round(tmp, 10))
         return tau
 
