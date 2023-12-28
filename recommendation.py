@@ -618,6 +618,8 @@ class CarRecommendation(object):
             for i in range(4, len(data[0])):
                 if weights[i - 4] == 0:
                     data[2][i] = "-"
+        for i in range(0, len(data) - 2):
+            data[i + 2][0] = i
         return data
 
     # Function converting a 2-dimensional li of results into a pandas data frame and saves it to ans XLSX file
