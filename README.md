@@ -32,7 +32,7 @@ Results are saved into Excel files, showing rankings both with and without featu
 1. Clone the repository.
 2. Install the required libraries:
    ```bash
-   pip install numpy pandas openpyxl
+   pip install numpy pandas openpyxl tkinter
    ```
 3. Run the main application:
    ```bash
