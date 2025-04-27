@@ -1,5 +1,7 @@
 # PracaInz
 
+Repository for the engineering thesis project (Polish language was required for naming conventions).
+
 This repository contains a simple desktop application that recommends cars based on user preferences.  
 The application is built in **Python** with a GUI created using **tkinter**, and uses CSV data as input.  
 The system implements four recommendation algorithms based on various similarity measures between vehicles.
